@@ -1,123 +1,106 @@
---[[
-	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
-]]
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- GUI Oluşturma
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local SelectButton = Instance.new("TextButton") -- Yeni Buton
+local FinishButton = Instance.new("TextButton")
+local UnloadButton = Instance.new("TextButton")
 
-local Window = Rayfield:CreateWindow({
-   Name = "Carpet Cleaning - By Sqilss",
-   LoadingTitle = "Carpet Cleaning Sqilss",
-   LoadingSubtitle = "Auto Perfect Job + Auto Complete",
-   ConfigurationSaving = { Enabled = true, FolderName = "CarpetCleaning", FileName = "Config" }
-})
+-- Ayarlar
+ScreenGui.Name = "JobControlGUI"
+ScreenGui.Parent = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
 
-local Tab = Window:CreateTab("Main Farm", 4483362458)
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -100)
+MainFrame.Size = UDim2.new(0, 200, 0, 200) -- Boyutu biraz artırdım
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-Tab:CreateSection("Auto Job Complete (Unchanged)")
+local MainCorner = Instance.new("UICorner", MainFrame)
+MainCorner.CornerRadius = UDim.new(0, 10)
 
-local autoComplete = false
-local perfectMode = true
+-- Başlık
+Title.Name = "Title"
+Title.Parent = MainFrame
+Title.BackgroundTransparency = 1
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Font = Enum.Font.GothamBold
+Title.Text = "Finish Job %100"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 18
 
-Tab:CreateToggle({
-   Name = "Auto Request Job Complete",
-   CurrentValue = false,
-   Callback = function(Value)
-      autoComplete = Value
-      if Value then
-         spawn(function()
-            while autoComplete do
-               pcall(function()
-                  if perfectMode then
-                     game.ReplicatedStorage.Remotes.RequestJobComplete:FireServer(1.0, 9999)
-                     game.ReplicatedStorage.Remotes.RequestJobComplete:FireServer(0.9999, 9999)
-                  else
-                     game.ReplicatedStorage.Remotes.RequestJobComplete:FireServer(1.0, 0)
-                     game.ReplicatedStorage.Remotes.RequestJobComplete:FireServer(0.999, 999)
-                  end
-                  game.ReplicatedStorage.Remotes.JobComplete:FireServer()
-               end)
-               task.wait(0.4)
-            end
-         end)
-      end
-   end,
-})
+-- 1. Select Job Button (Mavi Buton - Yeni eklenen)
+SelectButton.Name = "SelectButton"
+SelectButton.Parent = MainFrame
+SelectButton.BackgroundColor3 = Color3.fromRGB(45, 100, 150)
+SelectButton.Position = UDim2.new(0.1, 0, 0.25, 0)
+SelectButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+SelectButton.Font = Enum.Font.GothamSemibold
+SelectButton.Text = "Select Job"
+SelectButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SelectButton.TextSize = 14
+Instance.new("UICorner", SelectButton).CornerRadius = UDim.new(0, 6)
 
-Tab:CreateToggle({
-   Name = "Perfect Clean Mode (100%)",
-   CurrentValue = true,
-   Callback = function(Value)
-      perfectMode = Value
-   end,
-})
+-- 2. Finish Job Button (Yeşil Buton)
+FinishButton.Name = "FinishButton"
+FinishButton.Parent = MainFrame
+FinishButton.BackgroundColor3 = Color3.fromRGB(45, 150, 45)
+FinishButton.Position = UDim2.new(0.1, 0, 0.5, 0)
+FinishButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+FinishButton.Font = Enum.Font.GothamSemibold
+FinishButton.Text = "Finish Job"
+FinishButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+FinishButton.TextSize = 14
+Instance.new("UICorner", FinishButton).CornerRadius = UDim.new(0, 6)
 
-Tab:CreateButton({
-   Name = "One-Time Perfect Complete",
-   Callback = function()
-      game.ReplicatedStorage.Remotes.RequestJobComplete:FireServer(1.0, 9999)
-      game.ReplicatedStorage.Remotes.JobComplete:FireServer()
-   end,
-})
+-- 3. Unload Button (Kırmızı Buton)
+UnloadButton.Name = "UnloadButton"
+UnloadButton.Parent = MainFrame
+UnloadButton.BackgroundColor3 = Color3.fromRGB(150, 45, 45)
+UnloadButton.Position = UDim2.new(0.1, 0, 0.75, 0)
+UnloadButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+UnloadButton.Font = Enum.Font.GothamSemibold
+UnloadButton.Text = "Unload"
+UnloadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+UnloadButton.TextSize = 14
+Instance.new("UICorner", UnloadButton).CornerRadius = UDim.new(0, 6)
 
-Tab:CreateSection("Job Selector - Perfect Mode")
+-- FONKSİYONLAR
 
-local selectedRoom = "Office"
+-- Select Job Fonksiyonu
+SelectButton.MouseButton1Click:Connect(function()
+    local args = {
+        "Hanger",
+        "Perfect"
+    }
+    local remote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("SelectJob", 5)
+    if remote then
+        remote:FireServer(unpack(args))
+        SelectButton.Text = "Job Selected!"
+        task.wait(1)
+        SelectButton.Text = "Select Best Job"
+    end
+end)
 
-Tab:CreateDropdown({
-   Name = "Select Room",
-   Options = {"Bedroom", "LivingRoom", "Office", "Dining Room", "Hotel Room", "Restaurant Floor", "Mansion Hall", "Cottage","Hotel Floor","Hanger" },
-   CurrentOption = {"Office"},
-   Callback = function(CurrentOption)
-      selectedRoom = CurrentOption[1]
-   end,
-})
+-- Finish Job Fonksiyonu
+FinishButton.MouseButton1Click:Connect(function()
+    local args = {
+        1,
+        25599583
+    }
+    local remote = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("RequestJobComplete", 5)
+    if remote then
+        remote:FireServer(unpack(args))
+        FinishButton.Text = "Job Completed!"
+        task.wait(1)
+        FinishButton.Text = "Finish Job"
+    end
+end)
 
--- Contract Type now includes "Perfect"
-local selectedContract = "Perfect"
-Tab:CreateDropdown({
-   Name = "Contract Type",
-   Options = {"Normal", "Speed", "Perfect"},
-   CurrentOption = {"Perfect"},
-   Callback = function(CurrentOption)
-      selectedContract = CurrentOption[1]
-   end,
-})
-
-local autoJobLoop = false
-Tab:CreateToggle({
-   Name = "Auto Loop Selected Job",
-   CurrentValue = false,
-   Callback = function(Value)
-      autoJobLoop = Value
-      if Value then
-         spawn(function()
-            while autoJobLoop do
-               pcall(function()
-                  game.ReplicatedStorage.Remotes.AbandonJob:FireServer()
-                  task.wait(0.8)
-                  game.ReplicatedStorage.Remotes.SelectJob:FireServer(selectedRoom, selectedContract)
-               end)
-               task.wait(3.5)   -- slightly longer delay for Perfect jobs
-            end
-         end)
-      end
-   end,
-})
-
-Tab:CreateButton({
-   Name = "Select Job Once (Perfect)",
-   Callback = function()
-      game.ReplicatedStorage.Remotes.AbandonJob:FireServer()
-      task.wait(0.5)
-      game.ReplicatedStorage.Remotes.SelectJob:FireServer(selectedRoom, selectedContract)
-      Rayfield:Notify("Selected", selectedRoom .. " (Perfect)", 4483362458)
-   end,
-})
-
-Tab:CreateSection("Extras")
-
-Tab:CreateButton({
-   Name = "Abandon Current Job",
-   Callback = function()
-      game.ReplicatedStorage.Remotes.AbandonJob:FireServer()
-   end,
-})
+-- Unload Fonksiyonu
+UnloadButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
